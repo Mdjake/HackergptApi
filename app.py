@@ -329,5 +329,5 @@ app = Flask(__name__)
 
 # Vercel expects the app variable to be named 'app'
 # If you want to test locally, uncomment the following:
-# if __name__ == "__main__":
+if __name__ == "__main__":
 #     app.run(debug=True, port=5000)
