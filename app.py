@@ -197,6 +197,7 @@ def home():
         "description": "API for chatting with DeepHat AI assistant",
         "endpoints": {
             "/": "GET - This documentation",
+            "/ask": "GET - Quick chat from browser (use ?message=Hello)",
             "/chat": "POST - Send a message to DeepHat",
             "/history": "GET - Get conversation history",
             "/stats": "GET - Get session statistics",
@@ -205,6 +206,7 @@ def home():
             "/sessions": "GET - List all active sessions"
         },
         "examples": {
+            "browser": "https://hackergpt-api.vercel.app/ask?message=What%20is%20cybersecurity",
             "chat": {
                 "method": "POST",
                 "body": {
@@ -213,6 +215,35 @@ def home():
                 }
             }
         }
+    })
+
+@app.route('/ask', methods=['GET'])
+def ask():
+    """Chat using GET request - easy for browser testing."""
+    message = request.args.get('message')
+    session_id = request.args.get('session_id')
+    
+    if not message:
+        return jsonify({
+            "error": "Missing 'message' parameter",
+            "usage": "https://hackergpt-api.vercel.app/ask?message=Hello"
+        }), 400
+    
+    # Get or create chat session
+    chat = get_or_create_chat(session_id)
+    
+    # Send message
+    response = chat.send_message(message)
+    
+    # Check if response is an error
+    if isinstance(response, dict) and 'error' in response:
+        return jsonify(response), 500
+    
+    return jsonify({
+        "success": True,
+        "session_id": chat.session_id,
+        "response": response,
+        "message_count": len(chat.messages)
     })
 
 @app.route('/chat', methods=['POST'])
