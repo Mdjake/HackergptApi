@@ -10,7 +10,9 @@ from datetime import datetime
 from typing import List, Dict, Optional, Any
 from flask import Flask, request, jsonify, Response, stream_with_context
 import traceback
+import os
 
+# ========== Initialize Flask App (MUST be at top level) ==========
 app = Flask(__name__)
 
 # ========== Configuration ==========
@@ -199,7 +201,8 @@ def home():
             "/history": "GET - Get conversation history",
             "/stats": "GET - Get session statistics",
             "/reset": "POST - Reset the session",
-            "/clear": "POST - Clear conversation history"
+            "/clear": "POST - Clear conversation history",
+            "/sessions": "GET - List all active sessions"
         },
         "examples": {
             "chat": {
@@ -322,12 +325,23 @@ def list_sessions():
         "sessions": sessions
     })
 
-# ========== Vercel Handler ==========
-# For Vercel serverless deployment
-from flask import Flask
-app = Flask(__name__)
+# ========== Error Handlers ==========
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"error": "Endpoint not found"}), 404
 
-# Vercel expects the app variable to be named 'app'
-# If you want to test locally, uncomment the following:
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return jsonify({"error": "Method not allowed"}), 405
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"error": "Internal server error"}), 500
+
+# ========== Vercel Handler ==========
+# Vercel will automatically use the 'app' variable
+# No additional code needed
+
+# ========== Local Development ==========
 if __name__ == "__main__":
-#     app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000)
